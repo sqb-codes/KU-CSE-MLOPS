@@ -1,11 +1,13 @@
 from pathlib import Path
 import joblib
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field
 import mlflow
 import mlflow.sklearn
 import numpy as np
 import os
+from contextlib import asynccontextmanager
+from typing import Callable
 
 
 # MLFlow Configuration
@@ -16,26 +18,41 @@ MLFLOW_TRACKING_URI = os.getenv(
 # model:/iris-classifier@champion
 MODEL_URI = "models:/iris-classifier@champion"
 
-mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-
-# MODEL_PATH = Path("models/iris_random_forest_model.joblib")
-# model = joblib.load(MODEL_PATH)
-
-try:
-    # Load the champion model at application startup
+def load_mlflow_model():
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
     model = mlflow.sklearn.load_model(MODEL_URI)
-    client = mlflow.MlflowClient()
-    champion_version = client.get_model_version_by_alias(
-        name="iris-classifier",
-        alias="champion"
+    return model
+
+
+def create_app(model_loader: Callable=load_mlflow_model):
+    @asynccontextmanager
+    def lifespan(app:FastAPI):
+        try:
+            app.state.model = model_loader()
+        except Exception as ex:
+            raise RuntimeError(
+                f"Failed to load model: {ex}"
+            )
+        client = mlflow.MlflowClient(
+            tracking_uri=MLFLOW_TRACKING_URI
+        )
+        champion_version = client.get_model_version_by_alias(
+            name="iris-classifier",
+            alias="champion"
+        )
+        app.state.model_version = champion_version.version
+        yield
+
+    app = FastAPI(
+        title="Iris Classification API",
+        description="Iris prediction API powered by MLFlow",
+        version="3.0.0",
+        lifespan=lifespan
     )
-    model_version = champion_version.version
-    print(f"Loaded Model: iris-classifier version {model_version}")
-except Exception as ex:
-    raise RuntimeError(f"Could not load champion model from MLFlow: {ex}")
+        
 
 # Create FastAPI Application
-app = FastAPI(title="Iris Random Forest API")
+# app = FastAPI(title="Iris Random Forest API")
 
 class IrisInput(BaseModel):
     sepal_length: float = Field(gt=0)
