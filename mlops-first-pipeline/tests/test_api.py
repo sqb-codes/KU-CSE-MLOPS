@@ -44,3 +44,18 @@ def test_valid_iris_prediction():
     # The predicted integere must be between 0 and 2
     assert result["prediction"] in [0,1,2]
 
+
+def test_invalid_iris_input():
+    """
+    Verify that invalid inputs are rejected by FastAPI
+    """
+    payload = {
+            "sepal_length": -2.3,
+            "sepal_width": 1.4,
+            "petal_length": 3.4,
+            "petal_width": 0.4
+        }
+    # Send a simulated HTTP POST request with JSON input
+    response = client.post("/predict", json=payload)
+    # FastAPI normally returns HTTP 422 for validation error
+    assert response.status_code == 422

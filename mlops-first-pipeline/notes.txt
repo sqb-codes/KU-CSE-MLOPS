@@ -1,0 +1,172 @@
+====================================
+Phase-1: Build Foundation for MLOps
+====================================
+
+Step-1: Create virtual environment
+python -m venv kiet-cse
+
+Step-2: Activate virtual environment
+In mac:
+source kiet-cse/bin/activate
+
+In windows:
+kiet-cse\Scripts\activate
+
+Step-3: Create project strcuture
+mkdir mlops-first-pipeline
+cd mlops-first-pipeline
+
+Step-4: Install required packages
+pip install -r requirements.txt
+
+Step-5: Train and Save the model
+python train.py
+
+Step-6: Create and start the FastAPI
+uvicorn main:app --reload
+python -m uvicorn main:app --reload
+
+For API Testing use this data:
+{
+    "sepal_length": 5.1,
+    "sepal_width": 3.5,
+    "petal_length": 1.6,
+    "petal_width": 0.5
+}
+
+====================================
+Phase-2: Dockerize ML Application
+====================================
+
+Traditional ML Flow:
+Dataset -> Train -> Model Evaluation -> Prediction
+
+Production Ready ML Application
+Saved Model -> Python App -> REST API -> Automated Test -> Docker Container -> CI/CD
+Can be tested, deployed, accessed by clients and maintained consistently
+
+
+Why we need Docker ?
+- Imagine right now ML application is working on your macbook, but fails on another engineer laptop that runs it on a Linux/windows server
+
+Possible reasons of failure:
+- Different Python Versions
+- Different versions of scikit-learn or FastAPI
+- Missing Python Packages
+- Different OS dependencies
+
+Docker helps package your application code, runtime, dependencies and startup instructions into a standardized image
+
+4 major requirements:
+- Dockerfile - Instructions for packaging the ML application
+- Image - packaged reusable application artifact
+- Container - Running instance of that image
+- Port mapping - Makes the API inside the container accessible from your system
+
+Commands for Docker
+1. docker ps = print all running containers
+2. docker ps -a = print all active/non-active containers
+3. docker build -t cse-mlops .
+= build docker image
+-t = tag = name of the image
+4. docker images = List locally available docker images
+5. Start the container:
+docker run -d --name iris-ml-api -p 8000:8000 cse-mlops
+
+====================================
+Phase-3: Automated Testing and CI/CD with GitHub Actions
+====================================
+
+What's our Goal ?
+Developer pushes code to GitHub
+GitHub actions start the workflow
+Triggered by a push or pull request
+
+Run tests:
+Validate model API behavior
+Build image
+Verify Docker Packaging
+
+
+What is CI/CD ?
+- CI - Continuous Integration: Automatically validates code changes through tests and build checks
+- CD - Continuous Delivery: Keeps changes ready for release, with production release potentially requiring approval
+- CD - Continuous Deployment - Automatically releases changes to production when all required checks pass
+
+
+Automated Testing
+- Automated testing catches issues before a change moves to production
+- Pytest + FastAPI Test Client + GitHub Actions
+
+Update the project structure
+- mlops-first-pipeline
+---- tests
+-------- test_api.py
+---- .github
+-------- workflows
+------------ ci.yml
+
+Now install two new packages:
+- httpx: FastAPI TestClient uses HTTPx to simulate http request to your application
+- pytest: It discovers and run automated tests, report failures, and returns non-zero exit status when tests fail
+
+pip install httpx pytest
+
+Run Test Locally
+python -m pytest -v
+
+Create the GitHub Actions Workflow
+
+Push the project to GitHub
+Commands:
+git init
+git add .
+git commit -m "First commit"
+git branch -M main
+git remote add origin https://github.com/sqb-codes/mlops-cse-first-pipeline.git
+git push -u origin main
+
+
+Progress so far:
+Train model and create Fast API application - Done
+Conatinerize the application with Docker - Done
+Automated tests with GitHub CI - Done
+Experiment tracking and model registery with MLFlow - Next Step
+Container registery and cloud deployment
+Production monitoring and drift detection
+Automated training and model prediction
+
+
+====================================
+Phase-4: MLFlow - Experiment Tracking and Model Registery
+====================================
+
+Why do we need MLFlow ?
+- Imagine you train a model multiple times, changing the parameters or data version
+- Without experiment tracking you might end up with files like model_v1.joblib, model_v2.joblib, model_final.joblib
+- MLFlow helps us maintain that record
+
+Training experiments
+- Model parameters, dataset details and evaluation results
+
+MLFlow Tracking
+- Records parameters, metrics, run information and model artifacts
+
+MLFlow Model Registry
+- Organize model versions, metadata and lifecycle management
+
+Deployment pipeline
+- Select, validate and deploy approved model version
+
+
+Four major concepts:
+- Experiment - collection of related training runs
+- Run - one execution of training with specific parameters and results
+- Artifact - saved file produced by a run, such as trained model or evaluation report
+- Model Registery - managed catalog of registered models and their versions
+
+Install MLFlow
+pip install mlflow
+
+mlflow server --backend-store-uri sqlite:///mlflow.db --host 127.0.0.1 --port 5000
+

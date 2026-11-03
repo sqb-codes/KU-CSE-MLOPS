@@ -15,3 +15,8 @@ node_modules/
 # IDE/editor folders
 .vscode/
 .idea/
+
+mlartifacts/
+
+mlops-first-pipeline/__pycache__
+mlops-first-pipeline/.pytest_cache

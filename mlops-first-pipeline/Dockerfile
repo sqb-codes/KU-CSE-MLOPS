@@ -12,7 +12,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code and saved model into /app
-COPY . . 
+COPY main.py . 
 
 # Document the port used by FastAPI application
 EXPOSE 8000

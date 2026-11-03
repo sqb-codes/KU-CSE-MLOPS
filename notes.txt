@@ -114,3 +114,105 @@ pip install httpx pytest
 
 Run Test Locally
 python -m pytest -v
+
+Create the GitHub Actions Workflow
+
+Push the project to GitHub
+Commands:
+git init
+git add .
+git commit -m "First commit"
+git branch -M main
+git remote add origin https://github.com/sqb-codes/mlops-cse-first-pipeline.git
+git push -u origin main
+
+
+Progress so far:
+Train model and create Fast API application - Done
+Conatinerize the application with Docker - Done
+Automated tests with GitHub CI - Done
+Experiment tracking and model registery with MLFlow - Next Step
+Container registery and cloud deployment
+Production monitoring and drift detection
+Automated training and model prediction
+
+
+====================================
+Phase-4: MLFlow - Experiment Tracking and Model Registery
+====================================
+
+Why do we need MLFlow ?
+- Imagine you train a model multiple times, changing the parameters or data version
+- Without experiment tracking you might end up with files like model_v1.joblib, model_v2.joblib, model_final.joblib
+- MLFlow helps us maintain that record
+
+Training experiments
+- Model parameters, dataset details and evaluation results
+
+MLFlow Tracking
+- Records parameters, metrics, run information and model artifacts
+
+MLFlow Model Registry
+- Organize model versions, metadata and lifecycle management
+
+Deployment pipeline
+- Select, validate and deploy approved model version
+
+
+Four major concepts:
+- Experiment - collection of related training runs
+- Run - one execution of training with specific parameters and results
+- Artifact - saved file produced by a run, such as trained model or evaluation report
+- Model Registery - managed catalog of registered models and their versions
+
+Install MLFlow
+pip install mlflow
+
+mlflow server \
+--backend-store-uri sqlite:///mlflow.db \
+--host 127.0.0.1 \
+--port 7001
+
+
+Evaluate and promote model versions
+- We will add a validation gate that checks model quality before allowing a model version to be considered for deployment
+
+Promote a validated model using champion alias
+- Our FastAPI application loads a model from a local file
+- This works for demo purpose, but becomes harder to manage when you have multiple model versions
+
+- Instead of hardcoding a file path or version, we can assign the alias champion to the model version we want out application to use
+
+
+Containerize the MLFlow Connected API
+MLFlow server running on our machine
+Model Registry + model artifacts
+
+Docker network connection
+Docker container
+
+FastAPI -> Loads iris-classifier@champion
+Prediction API
+
+
+Make MLFlow accessible to Docker
+
+Restart mlflow with IP - 0.0.0.0
+
+mlflow server \
+--backend-store-uri sqlite:///mlflow.db \
+--host 0.0.0.0 \
+--port 7001
+
+mlflow server \
+--backend-store-uri sqlite:///mlflow.db \
+--host 0.0.0.0 \
+--port 7001 \
+--allowed-hosts "host.docker.internal,host.docker.internal:7001"
+
+Build Docker image again
+docker build -t iris-ml-api:v2 .
+
+Start the container and test API
+docker run -d --name iris-ml-api-container -p 8000:8000 -e MLFLOW_TRACKING_URI=http://host.docker.internal:7001 iris-ml-api:v2
+
