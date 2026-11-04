@@ -216,3 +216,13 @@ docker build -t iris-ml-api:v2 .
 Start the container and test API
 docker run -d --name iris-ml-api-container -p 8000:8000 -e MLFLOW_TRACKING_URI=http://host.docker.internal:7001 iris-ml-api:v2
 
+
+Automatically build and publish Docker Images using GHCR
+GHCR - GitHub Container Registry
+
+GitHub Event:
+Pull request to main - Test run + Image Build 
+Push to main - Test run + Image Build + Publish Image
+
+
+

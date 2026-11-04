@@ -1,0 +1,17 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+kiet-cse/
+
+# Python cache
+__pycache__
+
+# IDE/editor folders
+.vscode/
+.idea/
