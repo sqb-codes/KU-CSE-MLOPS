@@ -94,4 +94,4 @@ def create_app(
 
 
 # Production application instance
-app = create_app()
+# app = create_app()
